@@ -449,3 +449,322 @@ export const notificationsAPI = {
     return handleResponse(response);
   }
 };
+
+// API для бронирования услуг
+export const bookingAPI = {
+  // API для работы с услугами
+  services: {
+    getAll: async (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      category?: string;
+      isActive?: boolean;
+    }) => {
+      const queryParams = new URLSearchParams();
+      
+      if (params) {
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        if (params.search) queryParams.append('search', params.search);
+        if (params.category) queryParams.append('category', params.category);
+        if (params.isActive !== undefined) queryParams.append('isActive', params.isActive.toString());
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/booking/services?${queryParams}`, {
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    getById: async (id: number) => {
+      const response = await fetch(`${API_BASE_URL}/booking/services/${id}`, {
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    create: async (serviceData: any) => {
+      const response = await fetch(`${API_BASE_URL}/booking/services`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(serviceData)
+      });
+      
+      return handleResponse(response);
+    },
+    
+    update: async (id: number, serviceData: any) => {
+      const response = await fetch(`${API_BASE_URL}/booking/services/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(serviceData)
+      });
+      
+      return handleResponse(response);
+    },
+    
+    delete: async (id: number) => {
+      const response = await fetch(`${API_BASE_URL}/booking/services/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    getCategories: async () => {
+      const response = await fetch(`${API_BASE_URL}/booking/service-categories`, {
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    createCategory: async (categoryData: any) => {
+      const response = await fetch(`${API_BASE_URL}/booking/service-categories`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(categoryData)
+      });
+      
+      return handleResponse(response);
+    },
+    
+    updateCategory: async (id: number, categoryData: any) => {
+      const response = await fetch(`${API_BASE_URL}/booking/service-categories/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(categoryData)
+      });
+      
+      return handleResponse(response);
+    },
+    
+    deleteCategory: async (id: number) => {
+      const response = await fetch(`${API_BASE_URL}/booking/service-categories/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    }
+  },
+  
+  // API для работы с сотрудниками
+  employees: {
+    getAll: async (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      isActive?: boolean;
+    }) => {
+      const queryParams = new URLSearchParams();
+      
+      if (params) {
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        if (params.search) queryParams.append('search', params.search);
+        if (params.isActive !== undefined) queryParams.append('isActive', params.isActive.toString());
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/booking/employees?${queryParams}`, {
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    getById: async (id: number) => {
+      const response = await fetch(`${API_BASE_URL}/booking/employees/${id}`, {
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    create: async (employeeData: any) => {
+      const response = await fetch(`${API_BASE_URL}/booking/employees`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(employeeData)
+      });
+      
+      return handleResponse(response);
+    },
+    
+    update: async (id: number, employeeData: any) => {
+      const response = await fetch(`${API_BASE_URL}/booking/employees/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(employeeData)
+      });
+      
+      return handleResponse(response);
+    },
+    
+    delete: async (id: number) => {
+      const response = await fetch(`${API_BASE_URL}/booking/employees/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    updateSchedule: async (id: number, scheduleData: any) => {
+      const response = await fetch(`${API_BASE_URL}/booking/employees/${id}/schedule`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(scheduleData)
+      });
+      
+      return handleResponse(response);
+    }
+  },
+  
+  // API для работы с бронированиями
+  bookings: {
+    getAll: async (params?: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      employeeId?: number;
+      serviceId?: number;
+      customerId?: number;
+    }) => {
+      const queryParams = new URLSearchParams();
+      
+      if (params) {
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        if (params.status) queryParams.append('status', params.status);
+        if (params.dateFrom) queryParams.append('dateFrom', params.dateFrom);
+        if (params.dateTo) queryParams.append('dateTo', params.dateTo);
+        if (params.employeeId) queryParams.append('employeeId', params.employeeId.toString());
+        if (params.serviceId) queryParams.append('serviceId', params.serviceId.toString());
+        if (params.customerId) queryParams.append('customerId', params.customerId.toString());
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/booking/bookings?${queryParams}`, {
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    getById: async (id: number) => {
+      const response = await fetch(`${API_BASE_URL}/booking/bookings/${id}`, {
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    create: async (bookingData: any) => {
+      const response = await fetch(`${API_BASE_URL}/booking/bookings`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(bookingData)
+      });
+      
+      return handleResponse(response);
+    },
+    
+    update: async (id: number, bookingData: any) => {
+      const response = await fetch(`${API_BASE_URL}/booking/bookings/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(bookingData)
+      });
+      
+      return handleResponse(response);
+    },
+    
+    updateStatus: async (id: number, status: string) => {
+      const response = await fetch(`${API_BASE_URL}/booking/bookings/${id}/status`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status })
+      });
+      
+      return handleResponse(response);
+    },
+    
+    updatePaymentStatus: async (id: number, paymentStatus: string) => {
+      const response = await fetch(`${API_BASE_URL}/booking/bookings/${id}/payment-status`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ paymentStatus })
+      });
+      
+      return handleResponse(response);
+    },
+    
+    delete: async (id: number) => {
+      const response = await fetch(`${API_BASE_URL}/booking/bookings/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    },
+    
+    addNote: async (id: number, note: string) => {
+      const response = await fetch(`${API_BASE_URL}/booking/bookings/${id}/notes`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ note })
+      });
+      
+      return handleResponse(response);
+    },
+    
+    getStatistics: async (params?: {
+      dateFrom?: string;
+      dateTo?: string;
+      employeeId?: number;
+      serviceId?: number;
+    }) => {
+      const queryParams = new URLSearchParams();
+      
+      if (params) {
+        if (params.dateFrom) queryParams.append('dateFrom', params.dateFrom);
+        if (params.dateTo) queryParams.append('dateTo', params.dateTo);
+        if (params.employeeId) queryParams.append('employeeId', params.employeeId.toString());
+        if (params.serviceId) queryParams.append('serviceId', params.serviceId.toString());
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/booking/statistics?${queryParams}`, {
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    }
+  },
+  
+  // API для работы с доступными временными слотами
+  timeSlots: {
+    getAvailable: async (params: {
+      date: string;
+      serviceId: number;
+      employeeId?: number;
+    }) => {
+      const queryParams = new URLSearchParams();
+      
+      queryParams.append('date', params.date);
+      queryParams.append('serviceId', params.serviceId.toString());
+      if (params.employeeId) queryParams.append('employeeId', params.employeeId.toString());
+      
+      const response = await fetch(`${API_BASE_URL}/booking/time-slots/available?${queryParams}`, {
+        headers: getAuthHeaders()
+      });
+      
+      return handleResponse(response);
+    }
+  }
+};

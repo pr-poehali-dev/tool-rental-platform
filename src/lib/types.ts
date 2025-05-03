@@ -134,6 +134,14 @@ export interface DashboardStats {
       direction: 'up' | 'down';
     };
   };
+  bookings?: {
+    count: number;
+    change: {
+      value: number;
+      percentage: number;
+      direction: 'up' | 'down';
+    };
+  };
 }
 
 export interface RevenueData {
@@ -198,7 +206,7 @@ export interface Notification {
   description: string;
   time: string;
   read: boolean;
-  type?: 'order' | 'product' | 'customer' | 'system';
+  type?: 'order' | 'product' | 'customer' | 'system' | 'booking';
   link?: string;
 }
 
@@ -221,5 +229,143 @@ export interface AuthResponse {
     username: string;
     name: string;
     role: 'admin' | 'manager' | 'employee';
+  };
+}
+
+// Типы для бронирования
+export interface Service {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  duration: number; // в минутах
+  image?: string;
+  category: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ServicesResponse {
+  data: Service[];
+  pagination: PaginationParams;
+}
+
+export interface ServiceCategory {
+  id: number;
+  name: string;
+  description?: string;
+  count?: number;
+}
+
+export interface ServiceCategoriesResponse {
+  data: ServiceCategory[];
+  pagination: PaginationParams;
+}
+
+export interface Employee {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  avatar?: string;
+  specializations: string[];
+  schedule?: WeeklySchedule;
+  isActive: boolean;
+}
+
+export interface EmployeesResponse {
+  data: Employee[];
+  pagination: PaginationParams;
+}
+
+export interface WeeklySchedule {
+  monday: DailySchedule;
+  tuesday: DailySchedule;
+  wednesday: DailySchedule;
+  thursday: DailySchedule;
+  friday: DailySchedule;
+  saturday: DailySchedule;
+  sunday: DailySchedule;
+}
+
+export interface DailySchedule {
+  isWorkDay: boolean;
+  startTime?: string; // "09:00"
+  endTime?: string; // "18:00"
+  breaks?: TimeRange[];
+}
+
+export interface TimeRange {
+  start: string; // "13:00"
+  end: string; // "14:00"
+}
+
+export interface TimeSlot {
+  id: string;
+  startTime: string; // ISO date
+  endTime: string; // ISO date
+  isAvailable: boolean;
+  employeeId?: number;
+}
+
+export interface AvailableTimeSlotsResponse {
+  date: string;
+  serviceId: number;
+  slots: TimeSlot[];
+}
+
+export interface Booking {
+  id: number;
+  customer: {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+  };
+  service: {
+    id: number;
+    name: string;
+    price: number;
+    duration: number;
+  };
+  employee: {
+    id: number;
+    name: string;
+  };
+  startTime: string; // ISO date
+  endTime: string; // ISO date
+  status: BookingStatus;
+  notes?: string;
+  paymentStatus: PaymentStatus;
+  paymentMethod?: PaymentMethod;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+export type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'cancelled';
+
+export interface BookingsResponse {
+  data: Booking[];
+  pagination: PaginationParams;
+}
+
+export interface BookingStatistics {
+  total: number;
+  completed: number;
+  cancelled: number;
+  pending: number;
+  revenue: number;
+  mostPopularService?: {
+    id: number;
+    name: string;
+    bookingsCount: number;
+  };
+  mostActiveEmployee?: {
+    id: number;
+    name: string;
+    bookingsCount: number;
   };
 }

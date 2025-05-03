@@ -17,7 +17,20 @@ import {
   PaymentSettings,
   NotificationSettings,
   AuthResponse,
-  LoginCredentials
+  LoginCredentials,
+  Service,
+  ServicesResponse,
+  Employee,
+  EmployeesResponse,
+  ServiceCategory,
+  ServiceCategoriesResponse,
+  Booking,
+  BookingsResponse,
+  BookingStatus,
+  PaymentStatus,
+  AvailableTimeSlotsResponse,
+  BookingStatistics,
+  TimeSlot
 } from './types';
 import { products as mockProducts, categories } from './data';
 
@@ -143,7 +156,7 @@ const mockCustomers = generateMockCustomers();
 
 // Сгенерировать случайные уведомления
 const generateMockNotifications = (): Notification[] => {
-  const types = ['order', 'product', 'customer', 'system'];
+  const types = ['order', 'product', 'customer', 'system', 'booking'];
   const titles = [
     'Новый заказ',
     'Отмена заказа',
@@ -151,12 +164,14 @@ const generateMockNotifications = (): Notification[] => {
     'Оплата получена',
     'Новый клиент зарегистрирован',
     'Система обновлена',
-    'Необходимо продление лицензии'
+    'Необходимо продление лицензии',
+    'Новое бронирование',
+    'Отмена бронирования'
   ];
   
   return Array.from({ length: 15 }, (_, i) => {
     const typeIndex = Math.floor(Math.random() * types.length);
-    const type = types[typeIndex] as 'order' | 'product' | 'customer' | 'system';
+    const type = types[typeIndex] as 'order' | 'product' | 'customer' | 'system' | 'booking';
     
     // Выбираем заголовок в зависимости от типа
     let title = '';
@@ -183,6 +198,11 @@ const generateMockNotifications = (): Notification[] => {
         title = 'Системное уведомление';
         description = 'Необходимо обновить систему до последней версии';
         link = `/admin?tab=settings`;
+        break;
+      case 'booking':
+        title = 'Новое бронирование';
+        description = `Создано новое бронирование #${2000 + Math.floor(Math.random() * 1000)} от клиента ${mockCustomers[Math.floor(Math.random() * mockCustomers.length)].name}`;
+        link = `/admin?tab=bookings&id=${Math.floor(Math.random() * 100)}`;
         break;
     }
     
@@ -211,6 +231,286 @@ const generateMockNotifications = (): Notification[] => {
 };
 
 const mockNotifications = generateMockNotifications();
+
+// Генерация услуг для бронирования
+const generateMockServices = (): Service[] => {
+  const serviceCategories = ['Консультация', 'Ремонт', 'Обслуживание', 'Монтаж', 'Доставка'];
+  
+  return [
+    {
+      id: 1,
+      name: 'Консультация по выбору инструмента',
+      description: 'Профессиональная консультация по выбору инструмента под ваши задачи',
+      price: 500,
+      duration: 30,
+      category: 'Консультация',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800',
+      createdAt: '2025-01-01T10:00:00Z',
+      updatedAt: '2025-01-01T10:00:00Z'
+    },
+    {
+      id: 2,
+      name: 'Обучение работе с инструментом',
+      description: 'Индивидуальное обучение правильному и безопасному использованию инструмента',
+      price: 1200,
+      duration: 60,
+      category: 'Консультация',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1588702547919-26089e690ecc?w=800',
+      createdAt: '2025-01-02T10:00:00Z',
+      updatedAt: '2025-01-02T10:00:00Z'
+    },
+    {
+      id: 3,
+      name: 'Диагностика инструмента',
+      description: 'Профессиональная диагностика состояния и работоспособности инструмента',
+      price: 800,
+      duration: 45,
+      category: 'Обслуживание',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800',
+      createdAt: '2025-01-03T10:00:00Z',
+      updatedAt: '2025-01-03T10:00:00Z'
+    },
+    {
+      id: 4,
+      name: 'Заточка режущего инструмента',
+      description: 'Профессиональная заточка сверл, долот, стамесок и других режущих инструментов',
+      price: 600,
+      duration: 30,
+      category: 'Обслуживание',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800',
+      createdAt: '2025-01-04T10:00:00Z',
+      updatedAt: '2025-01-04T10:00:00Z'
+    },
+    {
+      id: 5,
+      name: 'Доставка и монтаж оборудования',
+      description: 'Доставка арендованного оборудования и его профессиональный монтаж на объекте',
+      price: 1500,
+      duration: 120,
+      category: 'Монтаж',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=800',
+      createdAt: '2025-01-05T10:00:00Z',
+      updatedAt: '2025-01-05T10:00:00Z'
+    },
+    {
+      id: 6,
+      name: 'Ремонт электроинструмента',
+      description: 'Диагностика и ремонт электроинструмента любой сложности',
+      price: 2000,
+      duration: 90,
+      category: 'Ремонт',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1581092335397-9fa73e7d634d?w=800',
+      createdAt: '2025-01-06T10:00:00Z',
+      updatedAt: '2025-01-06T10:00:00Z'
+    },
+    {
+      id: 7,
+      name: 'Экспресс-доставка инструмента',
+      description: 'Срочная доставка арендованного инструмента на объект в течение 2 часов',
+      price: 800,
+      duration: 120,
+      category: 'Доставка',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=800',
+      createdAt: '2025-01-07T10:00:00Z',
+      updatedAt: '2025-01-07T10:00:00Z'
+    },
+    {
+      id: 8,
+      name: 'Обслуживание генераторов',
+      description: 'Техническое обслуживание бензиновых и дизельных генераторов',
+      price: 1800,
+      duration: 120,
+      category: 'Обслуживание',
+      isActive: true,
+      image: 'https://images.unsplash.com/photo-1542013936693-884638332954?w=800',
+      createdAt: '2025-01-08T10:00:00Z',
+      updatedAt: '2025-01-08T10:00:00Z'
+    }
+  ];
+};
+
+const mockServices = generateMockServices();
+
+// Генерация категорий услуг
+const generateServiceCategories = (): ServiceCategory[] => {
+  return [
+    { id: 1, name: 'Консультация', description: 'Консультации по выбору и использованию инструмента', count: 2 },
+    { id: 2, name: 'Обслуживание', description: 'Обслуживание и профилактика инструмента', count: 3 },
+    { id: 3, name: 'Ремонт', description: 'Ремонт инструмента любой сложности', count: 1 },
+    { id: 4, name: 'Монтаж', description: 'Монтаж и установка оборудования', count: 1 },
+    { id: 5, name: 'Доставка', description: 'Услуги по доставке инструмента', count: 1 }
+  ];
+};
+
+const mockServiceCategories = generateServiceCategories();
+
+// Генерация сотрудников
+const generateMockEmployees = (): Employee[] => {
+  return [
+    {
+      id: 1,
+      name: 'Иванов Сергей',
+      email: 'ivanov@example.com',
+      phone: '+7 (905) 123-45-67',
+      position: 'Старший мастер',
+      avatar: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=200',
+      specializations: ['Электроинструмент', 'Генераторы'],
+      isActive: true,
+      schedule: {
+        monday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+        tuesday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+        wednesday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+        thursday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+        friday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+        saturday: { isWorkDay: false },
+        sunday: { isWorkDay: false }
+      }
+    },
+    {
+      id: 2,
+      name: 'Петрова Анна',
+      email: 'petrova@example.com',
+      phone: '+7 (916) 234-56-78',
+      position: 'Консультант',
+      avatar: 'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=200',
+      specializations: ['Консультации', 'Подбор инструмента'],
+      isActive: true,
+      schedule: {
+        monday: { isWorkDay: true, startTime: '10:00', endTime: '19:00', breaks: [{ start: '14:00', end: '15:00' }] },
+        tuesday: { isWorkDay: true, startTime: '10:00', endTime: '19:00', breaks: [{ start: '14:00', end: '15:00' }] },
+        wednesday: { isWorkDay: true, startTime: '10:00', endTime: '19:00', breaks: [{ start: '14:00', end: '15:00' }] },
+        thursday: { isWorkDay: true, startTime: '10:00', endTime: '19:00', breaks: [{ start: '14:00', end: '15:00' }] },
+        friday: { isWorkDay: true, startTime: '10:00', endTime: '19:00', breaks: [{ start: '14:00', end: '15:00' }] },
+        saturday: { isWorkDay: true, startTime: '10:00', endTime: '16:00' },
+        sunday: { isWorkDay: false }
+      }
+    },
+    {
+      id: 3,
+      name: 'Сидоров Алексей',
+      email: 'sidorov@example.com',
+      phone: '+7 (925) 345-67-89',
+      position: 'Механик',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
+      specializations: ['Ремонт', 'Обслуживание'],
+      isActive: true,
+      schedule: {
+        monday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+        tuesday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+        wednesday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+        thursday: { isWorkDay: false },
+        friday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+        saturday: { isWorkDay: true, startTime: '09:00', endTime: '15:00' },
+        sunday: { isWorkDay: false }
+      }
+    },
+    {
+      id: 4,
+      name: 'Козлов Дмитрий',
+      email: 'kozlov@example.com',
+      phone: '+7 (903) 456-78-90',
+      position: 'Мастер по монтажу',
+      avatar: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=200',
+      specializations: ['Монтаж', 'Установка'],
+      isActive: true,
+      schedule: {
+        monday: { isWorkDay: true, startTime: '08:00', endTime: '17:00', breaks: [{ start: '12:00', end: '13:00' }] },
+        tuesday: { isWorkDay: true, startTime: '08:00', endTime: '17:00', breaks: [{ start: '12:00', end: '13:00' }] },
+        wednesday: { isWorkDay: true, startTime: '08:00', endTime: '17:00', breaks: [{ start: '12:00', end: '13:00' }] },
+        thursday: { isWorkDay: true, startTime: '08:00', endTime: '17:00', breaks: [{ start: '12:00', end: '13:00' }] },
+        friday: { isWorkDay: true, startTime: '08:00', endTime: '17:00', breaks: [{ start: '12:00', end: '13:00' }] },
+        saturday: { isWorkDay: false },
+        sunday: { isWorkDay: false }
+      }
+    }
+  ];
+};
+
+const mockEmployees = generateMockEmployees();
+
+// Генерация бронирований
+const generateMockBookings = (): Booking[] => {
+  const statuses: BookingStatus[] = ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'];
+  const paymentStatuses: PaymentStatus[] = ['pending', 'paid', 'refunded', 'cancelled'];
+  const paymentMethods = ['card', 'cash', 'sbp', 'invoice'];
+  
+  return Array.from({ length: 20 }, (_, i) => {
+    // Генерация даты за последние 30 дней или будущие 30 дней
+    const isHistory = Math.random() > 0.5;
+    const date = new Date();
+    if (isHistory) {
+      date.setDate(date.getDate() - Math.floor(Math.random() * 30));
+    } else {
+      date.setDate(date.getDate() + Math.floor(Math.random() * 30));
+    }
+    
+    // Устанавливаем время
+    const hours = 9 + Math.floor(Math.random() * 8); // от 9 до 17
+    date.setHours(hours, 0, 0, 0);
+    
+    // Выбираем случайную услугу
+    const service = mockServices[Math.floor(Math.random() * mockServices.length)];
+    
+    // Выбираем случайного сотрудника
+    const employee = mockEmployees[Math.floor(Math.random() * mockEmployees.length)];
+    
+    // Выбираем случайного клиента
+    const customer = mockCustomers[Math.floor(Math.random() * mockCustomers.length)];
+    
+    // Определяем статус бронирования
+    let status: BookingStatus;
+    let paymentStatus: PaymentStatus;
+    
+    if (isHistory) {
+      status = Math.random() > 0.3 ? 'completed' : (Math.random() > 0.5 ? 'cancelled' : 'no_show');
+      paymentStatus = status === 'completed' ? 'paid' : (status === 'cancelled' ? 'refunded' : 'cancelled');
+    } else {
+      status = Math.random() > 0.7 ? 'confirmed' : 'pending';
+      paymentStatus = Math.random() > 0.5 ? 'paid' : 'pending';
+    }
+    
+    // Рассчитываем время окончания услуги
+    const endDate = new Date(date);
+    endDate.setMinutes(date.getMinutes() + service.duration);
+    
+    return {
+      id: i + 1,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone
+      },
+      service: {
+        id: service.id,
+        name: service.name,
+        price: service.price,
+        duration: service.duration
+      },
+      employee: {
+        id: employee.id,
+        name: employee.name
+      },
+      startTime: date.toISOString(),
+      endTime: endDate.toISOString(),
+      status,
+      notes: Math.random() > 0.7 ? 'Дополнительные пожелания клиента' : undefined,
+      paymentStatus,
+      paymentMethod: paymentStatus === 'paid' ? paymentMethods[Math.floor(Math.random() * paymentMethods.length)] as any : undefined,
+      createdAt: new Date(date.getTime() - 86400000 * Math.floor(Math.random() * 5)).toISOString(),
+      updatedAt: new Date(date.getTime() - 86400000 * Math.floor(Math.random() * 2)).toISOString()
+    };
+  });
+};
+
+const mockBookings = generateMockBookings();
 
 // Мок API для аутентификации
 export const mockAuthAPI = {
@@ -543,6 +843,14 @@ export const mockAnalyticsAPI = {
           percentage: 2.2,
           direction: 'down'
         }
+      },
+      bookings: {
+        count: 45,
+        change: {
+          value: 8,
+          percentage: 21.6,
+          direction: 'up'
+        }
       }
     };
   },
@@ -719,5 +1027,542 @@ export const mockNotificationsAPI = {
     mockNotifications.forEach(n => n.read = true);
     
     return { success: true };
+  }
+};
+
+// Мок API для бронирования услуг
+export const mockBookingAPI = {
+  // API для работы с услугами
+  services: {
+    getAll: async (params?: any): Promise<ServicesResponse> => {
+      await delay(800);
+      
+      let filteredServices = [...mockServices];
+      
+      // Применяем фильтрацию по поиску
+      if (params?.search) {
+        const searchLower = params.search.toLowerCase();
+        filteredServices = filteredServices.filter(s => 
+          s.name.toLowerCase().includes(searchLower) || 
+          s.description.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Применяем фильтрацию по категории
+      if (params?.category && params.category !== 'all') {
+        filteredServices = filteredServices.filter(s => 
+          s.category.toLowerCase() === params.category.toLowerCase()
+        );
+      }
+      
+      // Применяем фильтрацию по статусу активности
+      if (params?.isActive !== undefined) {
+        filteredServices = filteredServices.filter(s => s.isActive === params.isActive);
+      }
+      
+      return paginate<Service>(filteredServices, params?.page, params?.limit);
+    },
+    
+    getById: async (id: number): Promise<Service> => {
+      await delay(500);
+      
+      const service = mockServices.find(s => s.id === id);
+      if (!service) {
+        throw new Error('Услуга не найдена');
+      }
+      
+      return service;
+    },
+    
+    create: async (serviceData: any): Promise<Service> => {
+      await delay(1000);
+      
+      // Имитация создания услуги
+      const newService: Service = {
+        id: mockServices.length + 1,
+        name: serviceData.name || 'Новая услуга',
+        description: serviceData.description || 'Описание услуги',
+        price: Number(serviceData.price) || 500,
+        duration: Number(serviceData.duration) || 60,
+        category: serviceData.category || 'Консультация',
+        isActive: serviceData.isActive !== undefined ? serviceData.isActive : true,
+        image: serviceData.image || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      return newService;
+    },
+    
+    update: async (id: number, serviceData: any): Promise<Service> => {
+      await delay(1000);
+      
+      const service = mockServices.find(s => s.id === id);
+      if (!service) {
+        throw new Error('Услуга не найдена');
+      }
+      
+      // Имитация обновления услуги
+      const updatedService: Service = {
+        ...service,
+        name: serviceData.name !== undefined ? serviceData.name : service.name,
+        description: serviceData.description !== undefined ? serviceData.description : service.description,
+        price: serviceData.price !== undefined ? Number(serviceData.price) : service.price,
+        duration: serviceData.duration !== undefined ? Number(serviceData.duration) : service.duration,
+        category: serviceData.category !== undefined ? serviceData.category : service.category,
+        isActive: serviceData.isActive !== undefined ? serviceData.isActive : service.isActive,
+        image: serviceData.image !== undefined ? serviceData.image : service.image,
+        updatedAt: new Date().toISOString()
+      };
+      
+      return updatedService;
+    },
+    
+    delete: async (id: number): Promise<{ success: boolean }> => {
+      await delay(800);
+      
+      const serviceIndex = mockServices.findIndex(s => s.id === id);
+      if (serviceIndex === -1) {
+        throw new Error('Услуга не найдена');
+      }
+      
+      return { success: true };
+    },
+    
+    getCategories: async (): Promise<ServiceCategoriesResponse> => {
+      await delay(500);
+      
+      return {
+        data: mockServiceCategories,
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: mockServiceCategories.length,
+          totalPages: 1
+        }
+      };
+    }
+  },
+  
+  // API для работы с сотрудниками
+  employees: {
+    getAll: async (params?: any): Promise<EmployeesResponse> => {
+      await delay(800);
+      
+      let filteredEmployees = [...mockEmployees];
+      
+      // Применяем фильтрацию по поиску
+      if (params?.search) {
+        const searchLower = params.search.toLowerCase();
+        filteredEmployees = filteredEmployees.filter(e => 
+          e.name.toLowerCase().includes(searchLower) || 
+          e.email.toLowerCase().includes(searchLower) ||
+          e.phone.includes(params.search)
+        );
+      }
+      
+      // Применяем фильтрацию по статусу активности
+      if (params?.isActive !== undefined) {
+        filteredEmployees = filteredEmployees.filter(e => e.isActive === params.isActive);
+      }
+      
+      return paginate<Employee>(filteredEmployees, params?.page, params?.limit);
+    },
+    
+    getById: async (id: number): Promise<Employee> => {
+      await delay(500);
+      
+      const employee = mockEmployees.find(e => e.id === id);
+      if (!employee) {
+        throw new Error('Сотрудник не найден');
+      }
+      
+      return employee;
+    },
+    
+    create: async (employeeData: any): Promise<Employee> => {
+      await delay(1000);
+      
+      // Имитация создания сотрудника
+      const newEmployee: Employee = {
+        id: mockEmployees.length + 1,
+        name: employeeData.name || 'Новый сотрудник',
+        email: employeeData.email || 'new@example.com',
+        phone: employeeData.phone || '+7 (999) 123-45-67',
+        position: employeeData.position || 'Специалист',
+        avatar: employeeData.avatar || undefined,
+        specializations: employeeData.specializations || [],
+        isActive: employeeData.isActive !== undefined ? employeeData.isActive : true,
+        schedule: employeeData.schedule || {
+          monday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+          tuesday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+          wednesday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+          thursday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+          friday: { isWorkDay: true, startTime: '09:00', endTime: '18:00', breaks: [{ start: '13:00', end: '14:00' }] },
+          saturday: { isWorkDay: false },
+          sunday: { isWorkDay: false }
+        }
+      };
+      
+      return newEmployee;
+    },
+    
+    update: async (id: number, employeeData: any): Promise<Employee> => {
+      await delay(1000);
+      
+      const employee = mockEmployees.find(e => e.id === id);
+      if (!employee) {
+        throw new Error('Сотрудник не найден');
+      }
+      
+      // Имитация обновления сотрудника
+      const updatedEmployee: Employee = {
+        ...employee,
+        name: employeeData.name !== undefined ? employeeData.name : employee.name,
+        email: employeeData.email !== undefined ? employeeData.email : employee.email,
+        phone: employeeData.phone !== undefined ? employeeData.phone : employee.phone,
+        position: employeeData.position !== undefined ? employeeData.position : employee.position,
+        avatar: employeeData.avatar !== undefined ? employeeData.avatar : employee.avatar,
+        specializations: employeeData.specializations !== undefined ? employeeData.specializations : employee.specializations,
+        isActive: employeeData.isActive !== undefined ? employeeData.isActive : employee.isActive,
+        schedule: employeeData.schedule !== undefined ? employeeData.schedule : employee.schedule
+      };
+      
+      return updatedEmployee;
+    },
+    
+    delete: async (id: number): Promise<{ success: boolean }> => {
+      await delay(800);
+      
+      const employeeIndex = mockEmployees.findIndex(e => e.id === id);
+      if (employeeIndex === -1) {
+        throw new Error('Сотрудник не найден');
+      }
+      
+      return { success: true };
+    }
+  },
+  
+  // API для работы с бронированиями
+  bookings: {
+    getAll: async (params?: any): Promise<BookingsResponse> => {
+      await delay(800);
+      
+      let filteredBookings = [...mockBookings];
+      
+      // Применяем фильтрацию по статусу
+      if (params?.status && params.status !== 'all') {
+        filteredBookings = filteredBookings.filter(b => b.status === params.status);
+      }
+      
+      // Применяем фильтрацию по дате
+      if (params?.dateFrom) {
+        const dateFrom = new Date(params.dateFrom);
+        filteredBookings = filteredBookings.filter(b => new Date(b.startTime) >= dateFrom);
+      }
+      
+      if (params?.dateTo) {
+        const dateTo = new Date(params.dateTo);
+        dateTo.setHours(23, 59, 59);
+        filteredBookings = filteredBookings.filter(b => new Date(b.startTime) <= dateTo);
+      }
+      
+      // Применяем фильтрацию по сотруднику
+      if (params?.employeeId) {
+        filteredBookings = filteredBookings.filter(b => b.employee.id === Number(params.employeeId));
+      }
+      
+      // Применяем фильтрацию по услуге
+      if (params?.serviceId) {
+        filteredBookings = filteredBookings.filter(b => b.service.id === Number(params.serviceId));
+      }
+      
+      // Применяем фильтрацию по клиенту
+      if (params?.customerId) {
+        filteredBookings = filteredBookings.filter(b => b.customer.id === Number(params.customerId));
+      }
+      
+      // Сортировка по дате (новые сначала)
+      filteredBookings.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+      
+      return paginate<Booking>(filteredBookings, params?.page, params?.limit);
+    },
+    
+    getById: async (id: number): Promise<Booking> => {
+      await delay(500);
+      
+      const booking = mockBookings.find(b => b.id === id);
+      if (!booking) {
+        throw new Error('Бронирование не найдено');
+      }
+      
+      return booking;
+    },
+    
+    create: async (bookingData: any): Promise<Booking> => {
+      await delay(1000);
+      
+      // Находим сервис и сотрудника
+      const service = mockServices.find(s => s.id === bookingData.serviceId);
+      const employee = mockEmployees.find(e => e.id === bookingData.employeeId);
+      const customer = mockCustomers.find(c => c.id === bookingData.customerId) || 
+                      { id: 1, name: 'Новый клиент', email: 'new@example.com', phone: '+7 (999) 123-45-67' };
+      
+      if (!service) {
+        throw new Error('Услуга не найдена');
+      }
+      
+      if (!employee) {
+        throw new Error('Сотрудник не найден');
+      }
+      
+      // Рассчитываем время окончания услуги
+      const startTime = new Date(bookingData.startTime);
+      const endTime = new Date(startTime.getTime() + service.duration * 60000);
+      
+      // Имитация создания бронирования
+      const newBooking: Booking = {
+        id: mockBookings.length + 1,
+        customer: {
+          id: customer.id,
+          name: bookingData.customerName || customer.name,
+          email: bookingData.customerEmail || customer.email,
+          phone: bookingData.customerPhone || customer.phone
+        },
+        service: {
+          id: service.id,
+          name: service.name,
+          price: service.price,
+          duration: service.duration
+        },
+        employee: {
+          id: employee.id,
+          name: employee.name
+        },
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        status: 'pending',
+        notes: bookingData.notes,
+        paymentStatus: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      return newBooking;
+    },
+    
+    updateStatus: async (id: number, status: string): Promise<Booking> => {
+      await delay(800);
+      
+      const booking = mockBookings.find(b => b.id === id);
+      if (!booking) {
+        throw new Error('Бронирование не найдено');
+      }
+      
+      // Имитация обновления статуса
+      const updatedBooking = {
+        ...booking,
+        status: status as BookingStatus,
+        updatedAt: new Date().toISOString()
+      };
+      
+      return updatedBooking;
+    },
+    
+    delete: async (id: number): Promise<{ success: boolean }> => {
+      await delay(800);
+      
+      const bookingIndex = mockBookings.findIndex(b => b.id === id);
+      if (bookingIndex === -1) {
+        throw new Error('Бронирование не найдено');
+      }
+      
+      return { success: true };
+    },
+    
+    getStatistics: async (): Promise<BookingStatistics> => {
+      await delay(800);
+      
+      // Рассчитываем статистику
+      const totalBookings = mockBookings.length;
+      const completedBookings = mockBookings.filter(b => b.status === 'completed').length;
+      const cancelledBookings = mockBookings.filter(b => b.status === 'cancelled').length;
+      const pendingBookings = mockBookings.filter(b => b.status === 'pending' || b.status === 'confirmed').length;
+      
+      // Рассчитываем выручку от услуг
+      const revenue = mockBookings
+        .filter(b => b.status === 'completed' && b.paymentStatus === 'paid')
+        .reduce((sum, b) => sum + b.service.price, 0);
+      
+      // Определяем самую популярную услугу
+      const serviceCountMap = new Map<number, { id: number, name: string, count: number }>();
+      mockBookings.forEach(b => {
+        if (!serviceCountMap.has(b.service.id)) {
+          serviceCountMap.set(b.service.id, { id: b.service.id, name: b.service.name, count: 0 });
+        }
+        serviceCountMap.get(b.service.id)!.count++;
+      });
+      
+      const mostPopularService = Array.from(serviceCountMap.values()).sort((a, b) => b.count - a.count)[0];
+      
+      // Определяем самого активного сотрудника
+      const employeeCountMap = new Map<number, { id: number, name: string, count: number }>();
+      mockBookings.forEach(b => {
+        if (!employeeCountMap.has(b.employee.id)) {
+          employeeCountMap.set(b.employee.id, { id: b.employee.id, name: b.employee.name, count: 0 });
+        }
+        employeeCountMap.get(b.employee.id)!.count++;
+      });
+      
+      const mostActiveEmployee = Array.from(employeeCountMap.values()).sort((a, b) => b.count - a.count)[0];
+      
+      return {
+        total: totalBookings,
+        completed: completedBookings,
+        cancelled: cancelledBookings,
+        pending: pendingBookings,
+        revenue,
+        mostPopularService: {
+          id: mostPopularService.id,
+          name: mostPopularService.name,
+          bookingsCount: mostPopularService.count
+        },
+        mostActiveEmployee: {
+          id: mostActiveEmployee.id,
+          name: mostActiveEmployee.name,
+          bookingsCount: mostActiveEmployee.count
+        }
+      };
+    }
+  },
+  
+  // API для работы с доступными временными слотами
+  timeSlots: {
+    getAvailable: async (params: {
+      date: string;
+      serviceId: number;
+      employeeId?: number;
+    }): Promise<AvailableTimeSlotsResponse> => {
+      await delay(700);
+      
+      const service = mockServices.find(s => s.id === params.serviceId);
+      if (!service) {
+        throw new Error('Услуга не найдена');
+      }
+      
+      // Берем сотрудника из параметров или первого подходящего
+      let employee;
+      if (params.employeeId) {
+        employee = mockEmployees.find(e => e.id === params.employeeId);
+        if (!employee) {
+          throw new Error('Сотрудник не найден');
+        }
+      } else {
+        // Первый активный сотрудник
+        employee = mockEmployees.find(e => e.isActive);
+      }
+      
+      // Дата из параметров
+      const date = new Date(params.date);
+      const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'lowercase' });
+      
+      // Проверяем, рабочий ли это день для сотрудника
+      const schedule = employee!.schedule![dayOfWeek as keyof typeof employee.schedule];
+      if (!schedule || !schedule.isWorkDay) {
+        return {
+          date: params.date,
+          serviceId: params.serviceId,
+          slots: []
+        };
+      }
+      
+      // Получаем текущие бронирования на эту дату для этого сотрудника
+      const bookingsOnDate = mockBookings.filter(b => {
+        const bookingDate = new Date(b.startTime);
+        return bookingDate.toDateString() === date.toDateString() && 
+               b.employee.id === employee!.id &&
+               (b.status === 'pending' || b.status === 'confirmed');
+      });
+      
+      // Генерируем временные слоты
+      const startTime = schedule.startTime!.split(':');
+      const endTime = schedule.endTime!.split(':');
+      const startHour = parseInt(startTime[0]);
+      const startMinute = parseInt(startTime[1]);
+      const endHour = parseInt(endTime[0]);
+      const endMinute = parseInt(endTime[1]);
+      
+      const slots: TimeSlot[] = [];
+      let slotTime = new Date(date);
+      slotTime.setHours(startHour, startMinute, 0, 0);
+      
+      const slotEndTime = new Date(date);
+      slotEndTime.setHours(endHour, endMinute, 0, 0);
+      
+      // Шаг для временных слотов (в минутах)
+      const slotStep = 30;
+      
+      // Проходим по всем возможным слотам
+      while (slotTime.getTime() + service.duration * 60000 <= slotEndTime.getTime()) {
+        const slotEnd = new Date(slotTime.getTime() + service.duration * 60000);
+        
+        // Проверяем, не пересекается ли слот с перерывами
+        let isBreakTime = false;
+        schedule.breaks?.forEach(breakTime => {
+          const breakStart = new Date(date);
+          const breakStartTime = breakTime.start.split(':');
+          breakStart.setHours(parseInt(breakStartTime[0]), parseInt(breakStartTime[1]), 0, 0);
+          
+          const breakEnd = new Date(date);
+          const breakEndTime = breakTime.end.split(':');
+          breakEnd.setHours(parseInt(breakEndTime[0]), parseInt(breakEndTime[1]), 0, 0);
+          
+          // Если слот пересекается с перерывом
+          if (
+            (slotTime.getTime() >= breakStart.getTime() && slotTime.getTime() < breakEnd.getTime()) ||
+            (slotEnd.getTime() > breakStart.getTime() && slotEnd.getTime() <= breakEnd.getTime()) ||
+            (slotTime.getTime() <= breakStart.getTime() && slotEnd.getTime() >= breakEnd.getTime())
+          ) {
+            isBreakTime = true;
+          }
+        });
+        
+        // Проверяем, не пересекается ли слот с существующими бронированиями
+        let isBooked = false;
+        bookingsOnDate.forEach(booking => {
+          const bookingStart = new Date(booking.startTime);
+          const bookingEnd = new Date(booking.endTime);
+          
+          // Если слот пересекается с бронированием
+          if (
+            (slotTime.getTime() >= bookingStart.getTime() && slotTime.getTime() < bookingEnd.getTime()) ||
+            (slotEnd.getTime() > bookingStart.getTime() && slotEnd.getTime() <= bookingEnd.getTime()) ||
+            (slotTime.getTime() <= bookingStart.getTime() && slotEnd.getTime() >= bookingEnd.getTime())
+          ) {
+            isBooked = true;
+          }
+        });
+        
+        // Если слот подходит, добавляем его
+        if (!isBreakTime && !isBooked) {
+          slots.push({
+            id: `${slotTime.toISOString()}-${slotEnd.toISOString()}`,
+            startTime: slotTime.toISOString(),
+            endTime: slotEnd.toISOString(),
+            isAvailable: true,
+            employeeId: employee!.id
+          });
+        }
+        
+        // Переходим к следующему слоту
+        slotTime = new Date(slotTime.getTime() + slotStep * 60000);
+      }
+      
+      return {
+        date: params.date,
+        serviceId: params.serviceId,
+        slots
+      };
+    }
   }
 };

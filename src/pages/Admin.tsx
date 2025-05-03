@@ -10,6 +10,9 @@ import {
   Bell,
   Search,
   HelpCircle,
+  CalendarRange,
+  ClipboardList,
+  UserCog
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +35,8 @@ import {
 } from "@/components/ui/sheet";
 import ProductsTab from "@/components/admin/ProductsTab";
 import DashboardTab from "@/components/admin/DashboardTab";
+import BookingsTab from "@/components/admin/BookingsTab";
+import ServicesTab from "@/components/admin/ServicesTab";
 import { useApi } from "@/hooks/useApi";
 import { mockAuthAPI, mockNotificationsAPI } from "@/lib/mock-api";
 import { NotificationsResponse, AuthResponse, LoginCredentials } from "@/lib/types";
@@ -192,6 +197,10 @@ const Admin = () => {
         return <DashboardTab />;
       case "products":
         return <ProductsTab />;
+      case "bookings":
+        return <BookingsTab />;
+      case "services":
+        return <ServicesTab />;
       case "orders":
         return (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
@@ -208,6 +217,15 @@ const Admin = () => {
             <h3 className="text-lg font-medium mb-2">Управление клиентами</h3>
             <p className="text-gray-500 mb-4">Здесь будет отображаться список клиентов.</p>
             <Button>Загрузить клиентов</Button>
+          </div>
+        );
+      case "employees":
+        return (
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <UserCog className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+            <h3 className="text-lg font-medium mb-2">Управление сотрудниками</h3>
+            <p className="text-gray-500 mb-4">Здесь будет отображаться список сотрудников и их расписание.</p>
+            <Button>Загрузить сотрудников</Button>
           </div>
         );
       case "settings":
@@ -289,6 +307,34 @@ const Admin = () => {
               <li>
                 <button
                   onClick={() => {
+                    setActiveTab("bookings");
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className={`flex w-full items-center p-2 rounded-md ${
+                    activeTab === "bookings" ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <CalendarRange className="mr-2 h-5 w-5" />
+                  <span>Бронирования</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setActiveTab("services");
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className={`flex w-full items-center p-2 rounded-md ${
+                    activeTab === "services" ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <ClipboardList className="mr-2 h-5 w-5" />
+                  <span>Услуги</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
                     setActiveTab("customers");
                     setIsMobileSidebarOpen(false);
                   }}
@@ -298,6 +344,20 @@ const Admin = () => {
                 >
                   <Users className="mr-2 h-5 w-5" />
                   <span>Клиенты</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setActiveTab("employees");
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className={`flex w-full items-center p-2 rounded-md ${
+                    activeTab === "employees" ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <UserCog className="mr-2 h-5 w-5" />
+                  <span>Сотрудники</span>
                 </button>
               </li>
               <li>
@@ -386,6 +446,28 @@ const Admin = () => {
             </li>
             <li>
               <button
+                onClick={() => setActiveTab("bookings")}
+                className={`flex w-full items-center p-2 rounded-md ${
+                  activeTab === "bookings" ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <CalendarRange className="mr-2 h-5 w-5" />
+                <span>Бронирования</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveTab("services")}
+                className={`flex w-full items-center p-2 rounded-md ${
+                  activeTab === "services" ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <ClipboardList className="mr-2 h-5 w-5" />
+                <span>Услуги</span>
+              </button>
+            </li>
+            <li>
+              <button
                 onClick={() => setActiveTab("customers")}
                 className={`flex w-full items-center p-2 rounded-md ${
                   activeTab === "customers" ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100"
@@ -393,6 +475,17 @@ const Admin = () => {
               >
                 <Users className="mr-2 h-5 w-5" />
                 <span>Клиенты</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveTab("employees")}
+                className={`flex w-full items-center p-2 rounded-md ${
+                  activeTab === "employees" ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <UserCog className="mr-2 h-5 w-5" />
+                <span>Сотрудники</span>
               </button>
             </li>
             <Separator className="my-4" />
@@ -448,7 +541,10 @@ const Admin = () => {
                 {activeTab === "dashboard" && "Дашборд"}
                 {activeTab === "products" && "Управление товарами"}
                 {activeTab === "orders" && "Управление заказами"}
+                {activeTab === "bookings" && "Управление бронированием"}
+                {activeTab === "services" && "Управление услугами"}
                 {activeTab === "customers" && "Управление клиентами"}
+                {activeTab === "employees" && "Управление сотрудниками"}
                 {activeTab === "settings" && "Настройки системы"}
                 {activeTab === "help" && "Справка и поддержка"}
               </h1>
@@ -456,7 +552,10 @@ const Admin = () => {
                 {activeTab === "dashboard" && "Обзор и статистика"}
                 {activeTab === "products" && "Добавление, редактирование и удаление товаров"}
                 {activeTab === "orders" && "Просмотр и управление заказами"}
+                {activeTab === "bookings" && "Создание и управление бронированиями услуг"}
+                {activeTab === "services" && "Добавление и управление услугами"}
                 {activeTab === "customers" && "Информация о клиентах"}
+                {activeTab === "employees" && "Управление сотрудниками и их расписанием"}
                 {activeTab === "settings" && "Настройка магазина, доставки и оплаты"}
                 {activeTab === "help" && "Документация и ответы на вопросы"}
               </p>
