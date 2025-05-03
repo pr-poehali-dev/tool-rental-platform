@@ -9,6 +9,7 @@ const config = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
+			"./1746261808991987062.html"
 	],
   prefix: "",
   theme: {
