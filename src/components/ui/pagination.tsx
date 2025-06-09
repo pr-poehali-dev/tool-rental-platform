@@ -1,108 +1,157 @@
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+} from "lucide-react"
+
+import { cn } from "@/lib/utils"
+import { ButtonProps, buttonVariants } from "@/components/ui/button"
 
 interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  siblingCount?: number;
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+  className?: string
 }
 
-export function Pagination({ 
-  currentPage, 
-  totalPages, 
-  onPageChange, 
-  siblingCount = 1 
-}: PaginationProps) {
-  // Если страниц меньше или равно 7, показываем все страницы
-  // Иначе используем эллипсис
-  const shouldShowEllipsis = totalPages > 7;
-
-  // Генерируем массив страниц для отображения
-  const getPageNumbers = () => {
-    if (!shouldShowEllipsis) {
+const Pagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+  className,
+}: PaginationProps) => {
+  // Функция для создания массива страниц с учетом эллипсисов
+  const generatePagination = () => {
+    // Если страниц мало, показываем все
+    if (totalPages <= 5) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-
-    const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
-    const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
-
-    const showLeftDots = leftSiblingIndex > 2;
-    const showRightDots = rightSiblingIndex < totalPages - 1;
-
-    if (!showLeftDots && showRightDots) {
-      const leftItemCount = 3 + 2 * siblingCount;
-      return [...Array.from({ length: leftItemCount }, (_, i) => i + 1), "ellipsis", totalPages];
+    
+    // Всегда показываем первую и последнюю страницу
+    // и несколько страниц вокруг текущей
+    const pages = [];
+    
+    // Добавляем первую страницу
+    pages.push(1);
+    
+    // Добавляем эллипсис, если текущая страница не близка к началу
+    if (currentPage > 3) {
+      pages.push(-1); // -1 означает эллипсис
     }
-
-    if (showLeftDots && !showRightDots) {
-      const rightItemCount = 3 + 2 * siblingCount;
-      return [1, "ellipsis", ...Array.from(
-        { length: rightItemCount }, 
-        (_, i) => totalPages - rightItemCount + i + 1
-      )];
+    
+    // Добавляем страницы вокруг текущей
+    const startPage = Math.max(2, currentPage - 1);
+    const endPage = Math.min(totalPages - 1, currentPage + 1);
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
     }
-
-    if (showLeftDots && showRightDots) {
-      return [
-        1,
-        "leftEllipsis",
-        ...Array.from(
-          { length: rightSiblingIndex - leftSiblingIndex + 1 },
-          (_, i) => leftSiblingIndex + i
-        ),
-        "rightEllipsis",
-        totalPages,
-      ];
+    
+    // Добавляем эллипсис, если текущая страница не близка к концу
+    if (currentPage < totalPages - 2) {
+      pages.push(-2); // -2 означает второй эллипсис
     }
-
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+    
+    // Добавляем последнюю страницу
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
+    
+    return pages;
   };
-
-  const pageNumbers = getPageNumbers();
-
+  
+  const pages = generatePagination();
+  
   return (
-    <div className="flex gap-1">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-        disabled={currentPage === 1}
-      >
-        <ChevronLeft size={16} />
-        <span className="sr-only">Предыдущая страница</span>
-      </Button>
-
-      {pageNumbers.map((pageNumber, i) => 
-        pageNumber === "ellipsis" || pageNumber === "leftEllipsis" || pageNumber === "rightEllipsis" ? (
-          <Button key={`ellipsis-${i}`} variant="outline" size="sm" disabled>
-            <MoreHorizontal size={16} />
-            <span className="sr-only">Больше страниц</span>
-          </Button>
-        ) : (
-          <Button
-            key={pageNumber}
-            variant="outline"
-            size="sm"
-            className={currentPage === pageNumber ? "bg-primary text-white" : ""}
-            onClick={() => onPageChange(pageNumber as number)}
+    <nav
+      role="navigation"
+      aria-label="pagination"
+      className={cn("mx-auto flex w-full justify-center", className)}
+    >
+      <ul className="flex flex-row items-center gap-1">
+        <li>
+          <PaginationLink
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            aria-label="Go to previous page"
           >
-            {pageNumber}
-          </Button>
-        )
-      )}
-
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
-      >
-        <ChevronRight size={16} />
-        <span className="sr-only">Следующая страница</span>
-      </Button>
-    </div>
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Previous</span>
+          </PaginationLink>
+        </li>
+        
+        {pages.map((page, i) => {
+          // Если это эллипсис
+          if (page < 0) {
+            return (
+              <li key={`ellipsis-${i}`}>
+                <span className="flex h-9 w-9 items-center justify-center">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">More pages</span>
+                </span>
+              </li>
+            );
+          }
+          
+          // Обычная страница
+          return (
+            <li key={page}>
+              <PaginationLink
+                onClick={() => onPageChange(page)}
+                isActive={page === currentPage}
+                aria-label={`Go to page ${page}`}
+                aria-current={page === currentPage ? "page" : undefined}
+              >
+                {page}
+              </PaginationLink>
+            </li>
+          );
+        })}
+        
+        <li>
+          <PaginationLink
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages || totalPages === 0}
+            aria-label="Go to next page"
+          >
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Next</span>
+          </PaginationLink>
+        </li>
+      </ul>
+    </nav>
   );
+};
+
+interface PaginationLinkProps extends ButtonProps {
+  isActive?: boolean;
+  disabled?: boolean;
 }
+
+const PaginationLink = ({
+  className,
+  isActive,
+  disabled,
+  onClick,
+  children,
+  ...props
+}: PaginationLinkProps) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      buttonVariants({
+        variant: isActive ? "default" : "outline",
+        size: "icon",
+      }),
+      disabled && "pointer-events-none opacity-50",
+      className
+    )}
+    disabled={disabled}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+export { Pagination, PaginationLink };
